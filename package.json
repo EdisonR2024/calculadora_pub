@@ -1,0 +1,19 @@
+{
+  "name": "calculadora_final",
+  "version": "1.0.0",
+  "description": "Mi Calculadora",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EdisonR2024/calculadora_final.git"
+  },
+  "author": "Edison",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EdisonR2024/calculadora_final/issues"
+  },
+  "homepage": "https://github.com/EdisonR2024/calculadora_final#readme"
+}
