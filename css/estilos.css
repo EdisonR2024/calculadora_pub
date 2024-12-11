@@ -1,6 +1,5 @@
 :root{
     /* Colores */
-
     --rojo: rgb(238, 66, 66);
     --blanco: white;
     --amarrillo:yellow;
@@ -10,8 +9,6 @@
     --botones-otros: #6c589b;
     --botones-operadores: #faa608;
     --botones-numeros: #9055e2;
-
-
 }
 
 html {
@@ -90,6 +87,15 @@ body::after {
             padding-right: 0.8rem;
             padding-bottom: 0.3rem;
         }
+
+        #pantalla_operaciones{
+            font-size: 1.5rem;
+            padding-right: 1.25rem;
+        }
+
+        .po_color{
+            color: var(--fondo-principal);
+        }
     }
 
     #botones {
@@ -114,11 +120,11 @@ body::after {
             opacity: 0.6;
         }
 
-        #btn-cero{
-            /* grid-column: span 2; */
-            /* width: 14rem; */
-            /* border-bottom-left-radius: 1rem; */
-        }
+        /* #btn-cero{
+            grid-column: span 2;
+            width: 14rem;
+            border-bottom-left-radius: 1rem;
+        } */
 
         #negativo{
             border-bottom-left-radius: 1rem;
