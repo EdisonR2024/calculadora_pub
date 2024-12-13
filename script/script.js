@@ -15,6 +15,8 @@ let primerNumero = true;
 let punto_activado = false;
 let limite_caracteres_pantalla = 10;
 let boton_igual_disponible = false;
+let boton_negativo_disponible = false;
+let boton_porcentaje_disponible = false;
 
 let numeroActual = 0;
 let numeroAnterior = 0;
@@ -23,6 +25,7 @@ let operadorSeleccionado = '';
 
 divBotones.addEventListener('click', (event) => {
     let elemento_btn = event.target;
+
     if (elemento_btn.classList.contains('numero')) {
         accionNumeros(elemento_btn.innerText);
     } else if (elemento_btn.classList.contains('operadores')) {
@@ -32,17 +35,44 @@ divBotones.addEventListener('click', (event) => {
         numeroAnterior = numeroActual;
         resetearValoresPantallaPrincipal();
         boton_igual_disponible = true;
-    } else if (elemento_btn.innerHTML === '=' && boton_igual_disponible === true) {
+    } else if (elemento_btn.innerHTML === '=' && boton_igual_disponible) {
         console.log('anterior: ' + numeroAnterior);
         console.log('actual: ' + numeroActual);
-        // let resultado = Number(numeroAnterior) + Number(numeroActual);
         let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
         pantalla_operaciones.innerText = pantalla_operaciones.innerText + ' ' + numeroActual + ' =';
         pantalla.innerText = resultado;
         numeroActual = resultado;
-        boton_igual_disponible=false;
+        boton_igual_disponible = false;
     } else if (elemento_btn.innerHTML === 'AC') {
         reseteoTotal();
+    } else if (elemento_btn.innerHTML === '+/-' && boton_negativo_disponible) {
+        // alert('Click en el boton +/-');
+        let primer_caracter = pantalla.innerText.slice(0, 1);
+        if (primer_caracter === '-') {
+            pantalla.innerText = pantalla.innerText.slice(1, pantalla.innerText.length);
+        } else {
+            pantalla.innerText = '-' + pantalla.innerText;
+            numeroActual = pantalla.innerText;
+        }
+
+    } else if (elemento_btn.innerHTML === '%' && boton_porcentaje_disponible) {
+        console.log('Click en el boton %');
+
+
+        // console.log(numero_pantalla);
+
+        if (pantalla_operaciones.innerText === "#") {
+            pantalla.innerText = '0';
+        } else {
+            let numero_pantalla = pantalla.innerText;
+            let numero_para_porcentaje = numero_pantalla / 100;
+            numeroActual = numero_para_porcentaje;
+            //   pantalla.innerText=numero_para_porcentaje;
+            pantalla_operaciones.innerText = pantalla_operaciones.innerText + " " + numero_para_porcentaje +" =";
+            let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
+            pantalla.innerText = resultado;
+        }
+
     }
 });
 
@@ -52,8 +82,8 @@ divBotones.addEventListener('click', (event) => {
 
 boton_borrar.addEventListener('click', () => {
     if (pantalla.innerText.length > 1) {
-        pantalla.innerText = pantalla.innerText.slice(0, -1);
         let caracterBorrar = pantalla.innerText.slice(-1);
+        pantalla.innerText = pantalla.innerText.slice(0, -1);
         if (caracterBorrar === '.') {
             punto_activado = false;
         }
@@ -77,13 +107,15 @@ function accionNumeros(texto) {
     // alert('Haz dado click en el número ' + texto);
     if (pantalla.innerText.length < limite_caracteres_pantalla) {
         if (primerNumero) {
-            if (texto != '0') {
-                pantalla.innerText = texto;
-                primerNumero = false;
-                numeroActual = pantalla.innerText;
-                console.log('anterior: ' + numeroAnterior);
-                console.log('actual: ' + numeroActual);
+            pantalla.innerText = texto;
+            numeroActual = texto;
+            console.log('anterior: ' + numeroAnterior);
+            console.log('actual: ' + numeroActual);
 
+            if (texto != '0') {
+                primerNumero = false;
+                boton_negativo_disponible = true;
+                boton_porcentaje_disponible = true;
             }
         } else {
             pantalla.innerText = pantalla.innerText + texto;
@@ -115,6 +147,7 @@ function resetearValoresIniciales() {
     numeroActual = 0;
     numeroAnterior = 0;
     operadorSeleccionado = '';
+    boton_negativo_disponible = false;
 }
 
 function realizarOperacion(numero1, numero2, operador) {
