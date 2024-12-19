@@ -88,9 +88,30 @@ body::after {
             padding-bottom: 0.3rem;
         }
 
+        #pantalla{
+            /* width: 200px; */
+            height: 5rem;
+            /* border: 1px solid; */
+            line-height: 5rem;
+        }
+
         #pantalla_operaciones{
             font-size: 1.5rem;
             padding-right: 1.25rem;
+        }
+
+        .tam1_texto_pant{
+            font-size: 5rem;
+        }
+
+        .tam2_texto_pant{
+            font-size: 3.5rem;
+            /* color: lightcoral; */
+        }
+
+        .tam3_texto_pant{
+            font-size: 2.5rem;
+            /* color: yellow; */
         }
 
         .po_color{

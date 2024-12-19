@@ -1,98 +1,199 @@
 let divBotones = document.querySelector("#botones");
-// console.log(divBotones);
 let pantalla = document.querySelector("#pantalla");
 let pantalla_operaciones = document.querySelector("#pantalla_operaciones");
 
-// let boton_resetear = document.querySelector("#resetear");
+// let boton_punto = document.querySelector("#punto");
 
-let boton_punto = document.querySelector("#punto");
-
-let boton_borrar = document.querySelector("#borrar");
-
-// let boton_operadores= document.querySelectorAll('.operadores');
+// let boton_borrar = document.querySelector("#borrar");
 
 let primerNumero = true;
 let punto_activado = false;
-let limite_caracteres_pantalla = 10;
+let limite_caracteres_pantalla = 20;
 let boton_igual_disponible = false;
 let boton_negativo_disponible = false;
 let boton_porcentaje_disponible = false;
+let boton_borrar_disponible = false;
+// let pantalla_operaciones_habilitada=false;
+let habilitar_borrar_pantalla_operaciones = false;
+let habilitar_calculo_operadores = false;
 
-let numeroActual = 0;
-let numeroAnterior = 0;
+let numeroActual = NaN;
+let numeroAnterior = NaN;
 let operadorSeleccionado = '';
 
-
+//Se agrega el evento click a todo el contenedor de botones y se controla cada caso por boton
 divBotones.addEventListener('click', (event) => {
     let elemento_btn = event.target;
 
-    if (elemento_btn.classList.contains('numero')) {
-        accionNumeros(elemento_btn.innerText);
-    } else if (elemento_btn.classList.contains('operadores')) {
-        operadorSeleccionado = elemento_btn.innerText;
+    switch (true) {
+        case elemento_btn.classList.contains('numero'):
+            accionNumeros(elemento_btn.innerText);
+            break;
+        case elemento_btn.classList.contains('operadores'):
+            accionOperadores(elemento_btn.innerText);
+            break;
+        case (elemento_btn.innerText === '=' && boton_igual_disponible):
+            accionBtnIgual();
+            break;
+        case (elemento_btn.innerText === '+/-' && boton_negativo_disponible):
+            accionBtnNegativo();
+            break;
+        case (elemento_btn.innerText === '%' && boton_porcentaje_disponible):
+            accionBtnPorcentaje();
+            break;
+        case (elemento_btn.innerText === '.'):
+            accionBtnPunto();
+            break;
+        case (elemento_btn.innerText === 'AC'):
+            reseteoTotal();
+            break;
+        case (elemento_btn.id === 'borrar' && boton_borrar_disponible):
+            accionBtnBorrar();
+            break;
+        default:
+            console.log('No ha dado click en ningun boton');
+            break;
+    }
+});
+
+function accionNumeros(texto) {
+    if (pantalla.innerText.length < limite_caracteres_pantalla) {
+        if (primerNumero) {
+            imprimirPantallaPrincipal(texto);
+            numeroActual = texto;
+            // console.log('anterior: ' + numeroAnterior);
+            // console.log('actual: ' + numeroActual);
+            if (texto != '0') {
+                primerNumero = false;
+                boton_negativo_disponible = true;
+                boton_porcentaje_disponible = true;
+                boton_borrar_disponible = true;
+            }
+
+            if (boton_igual_disponible === false) {
+                resetearPantallaOperaciones();
+            }
+        } else {
+            imprimirPantallaPrincipal(pantalla.innerText + texto);
+            numeroActual = pantalla.innerText;
+            // console.log('anterior: ' + numeroAnterior);
+            // console.log('actual: ' + numeroActual);
+        }
+
+        //Para activar la función de calcular con los btn de operadores
+        if (!Number.isNaN(numeroAnterior)) {
+            habilitar_calculo_operadores = true;
+        }
+
+    }
+}
+
+function accionOperadores(operador) {
+    //Se realiza la función de calcular usando los botones de operadores
+    if (habilitar_calculo_operadores) {
+        console.log(`Se habilta calcOpe: ${numeroAnterior}${operadorSeleccionado}${numeroActual}`);
+        let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
+        numeroActual = resultado;
+        numeroAnterior = resultado;
+        console.log(resultado);
+        pantalla_operaciones.innerText = resultado + " " + operador;
+        operadorSeleccionado = operador;
+        imprimirPantallaPrincipal(resultado);
+    } else {
+        operadorSeleccionado = operador;
         pantalla_operaciones.innerText = pantalla.innerText + " " + operadorSeleccionado;
+        // pantalla_operaciones_habilitada=true;
         pantalla_operaciones.classList.remove('po_color');
         numeroAnterior = numeroActual;
-        resetearValoresPantallaPrincipal();
-        boton_igual_disponible = true;
-    } else if (elemento_btn.innerHTML === '=' && boton_igual_disponible) {
-        console.log('anterior: ' + numeroAnterior);
-        console.log('actual: ' + numeroActual);
-        let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
-        pantalla_operaciones.innerText = pantalla_operaciones.innerText + ' ' + numeroActual + ' =';
-        pantalla.innerText = resultado;
-        numeroActual = resultado;
-        boton_igual_disponible = false;
-    } else if (elemento_btn.innerHTML === 'AC') {
-        reseteoTotal();
-    } else if (elemento_btn.innerHTML === '+/-' && boton_negativo_disponible) {
-        // alert('Click en el boton +/-');
-        let primer_caracter = pantalla.innerText.slice(0, 1);
-        if (primer_caracter === '-') {
-            pantalla.innerText = pantalla.innerText.slice(1, pantalla.innerText.length);
-        } else {
-            pantalla.innerText = '-' + pantalla.innerText;
-            numeroActual = pantalla.innerText;
-        }
+        // resetearValoresPantallaPrincipal();
+        // boton_igual_disponible = true;
+        // habilitar_borrar_pantalla_operaciones = false;
 
-    } else if (elemento_btn.innerHTML === '%' && boton_porcentaje_disponible) {
-        console.log('Click en el boton %');
-
-
-        // console.log(numero_pantalla);
-
-        if (pantalla_operaciones.innerText === "#") {
-            pantalla.innerText = '0';
-        } else {
-            let numero_pantalla = pantalla.innerText;
-            let numero_para_porcentaje = numero_pantalla / 100;
-            numeroActual = numero_para_porcentaje;
-            //   pantalla.innerText=numero_para_porcentaje;
-            pantalla_operaciones.innerText = pantalla_operaciones.innerText + " " + numero_para_porcentaje +" =";
-            let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
-            pantalla.innerText = resultado;
-        }
-
+        // habilitar_calculo_operadores = false;//temporal
     }
-});
 
-/* boton_resetear.addEventListener('click', () => {
-    reseteoTotal();
-}); */
+    resetearValoresPantallaPrincipal();
+    boton_igual_disponible = true;
+    habilitar_borrar_pantalla_operaciones = false;
 
-boton_borrar.addEventListener('click', () => {
-    if (pantalla.innerText.length > 1) {
-        let caracterBorrar = pantalla.innerText.slice(-1);
-        pantalla.innerText = pantalla.innerText.slice(0, -1);
-        if (caracterBorrar === '.') {
-            punto_activado = false;
-        }
+    habilitar_calculo_operadores = false;//temporal
+
+    // accionBtnIgual();//Temporal
+
+    // let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
+    // console.log(resultado);
+}
+
+function accionBtnIgual() {
+    if (Number.isNaN(numeroAnterior)){
+        numeroAnterior=0;
+    }
+    console.log('anterior: ' + numeroAnterior);
+    console.log('actual: ' + numeroActual);
+    let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
+    pantalla_operaciones.innerText = pantalla_operaciones.innerText + ' ' + numeroActual + ' =';
+    // pantalla_operaciones_habilitada=true;
+    imprimirPantallaPrincipal(resultado);
+    numeroActual = resultado;
+    habilitar_borrar_pantalla_operaciones = true;
+    boton_igual_disponible = false;
+    boton_porcentaje_disponible=false;
+    habilitar_calculo_operadores = false;//temporal
+
+    resetearValoresPantallaPrincipal();//Temporal para pruebas
+}
+
+function accionBtnNegativo() {
+    let primer_caracter = pantalla.innerText.slice(0, 1);
+    if (primer_caracter === '-') {
+        imprimirPantallaPrincipal(pantalla.innerText.slice(1, pantalla.innerText.length));
     } else {
-        reseteoTotal();
+        imprimirPantallaPrincipal('-' + pantalla.innerText);
+        numeroActual = pantalla.innerText;
     }
-});
+}
 
-boton_punto.addEventListener('click', () => {
+function accionBtnPorcentaje() {
+    if (pantalla_operaciones.innerText === "#") {
+        // imprimirPantallaPrincipal('0');
+        // resetearPantallas();
+        reseteoTotal();
+    } else {
+        let numero_pantalla = pantalla.innerText;
+        let numero_para_porcentaje = numero_pantalla / 100;
+        // numeroActual = numero_para_porcentaje;
+        // pantalla.innerText=numero_para_porcentaje;
+        pantalla_operaciones.innerText = pantalla_operaciones.innerText + " " + numero_pantalla + "%=";
+        let resultado = 0;
+        switch (operadorSeleccionado) {
+            case 'x':
+            case '÷':
+                resultado = realizarOperacion(numeroAnterior, numero_para_porcentaje, operadorSeleccionado);
+                break;
+            case '+': 
+            case '-':
+                resultado = realizarOperacion(numeroAnterior, numeroAnterior*numero_para_porcentaje, operadorSeleccionado);
+                break;
+            default:
+                console.log('No ha seleccionado un operador para el calculo del %')
+                break;
+        }
+
+        // pantalla_operaciones_habilitada=true;
+        // let 
+        imprimirPantallaPrincipal(resultado);
+        numeroActual = resultado;
+        habilitar_borrar_pantalla_operaciones = true;
+        boton_igual_disponible = false;
+        boton_porcentaje_disponible = false;
+        habilitar_calculo_operadores = false;
+
+        resetearValoresPantallaPrincipal();//Temporal
+
+    }
+}
+
+function accionBtnPunto() {
     if (punto_activado === false) {
         if (primerNumero) {
             accionNumeros('0.');
@@ -101,41 +202,46 @@ boton_punto.addEventListener('click', () => {
         }
     }
     punto_activado = true;
-});
+}
 
-function accionNumeros(texto) {
-    // alert('Haz dado click en el número ' + texto);
-    if (pantalla.innerText.length < limite_caracteres_pantalla) {
-        if (primerNumero) {
-            pantalla.innerText = texto;
-            numeroActual = texto;
-            console.log('anterior: ' + numeroAnterior);
-            console.log('actual: ' + numeroActual);
-
-            if (texto != '0') {
-                primerNumero = false;
-                boton_negativo_disponible = true;
-                boton_porcentaje_disponible = true;
-            }
-        } else {
-            pantalla.innerText = pantalla.innerText + texto;
-            numeroActual = pantalla.innerText;
-            console.log('anterior: ' + numeroAnterior);
-            console.log('actual: ' + numeroActual);
+function accionBtnBorrar() {
+    if (habilitar_borrar_pantalla_operaciones) {
+        resetearPantallaOperaciones();
+        habilitar_borrar_pantalla_operaciones = false;
+        boton_borrar_disponible = false;
+    } else if (pantalla.innerText.length > 1) {
+        let caracterBorrar = pantalla.innerText.slice(-1);
+        imprimirPantallaPrincipal(pantalla.innerText.slice(0, -1));
+        if (caracterBorrar === '.') {
+            punto_activado = false;
         }
+    } else {
+        // reseteoTotal();// No hacer un reseteo total, solo trabajar con el reseteo de la pantalla principal
+        resetearPantallaPrincipal();
     }
 }
 
 function reseteoTotal() {
     resetearPantallas();
-    resetearValoresPantallaPrincipal();
+    // resetearValoresPantallaPrincipal();
     resetearValoresIniciales();
 }
 
 function resetearPantallas() {
-    pantalla.innerHTML = '0';
+    resetearPantallaPrincipal();
+    resetearPantallaOperaciones();
+}
+
+function resetearPantallaOperaciones() {
     pantalla_operaciones.innerText = '0';
+    // pantalla_operaciones_habilitada=false;
     pantalla_operaciones.classList.add('po_color');
+    habilitar_borrar_pantalla_operaciones;
+}
+
+function resetearPantallaPrincipal() {
+    imprimirPantallaPrincipal('0');
+    resetearValoresPantallaPrincipal();
 }
 
 function resetearValoresPantallaPrincipal() {
@@ -144,10 +250,12 @@ function resetearValoresPantallaPrincipal() {
 }
 
 function resetearValoresIniciales() {
-    numeroActual = 0;
-    numeroAnterior = 0;
+    numeroActual = NaN;
+    numeroAnterior = NaN;
     operadorSeleccionado = '';
     boton_negativo_disponible = false;
+
+    habilitar_calculo_operadores = false;//temporal
 }
 
 function realizarOperacion(numero1, numero2, operador) {
@@ -162,11 +270,35 @@ function realizarOperacion(numero1, numero2, operador) {
         case "÷":
             return resultado = Number(numero1) / Number(numero2);
         default:
-            console.log('Hubo algun error al realizar la operación')
+            console.log('Hubo algun error al realizar la operación');
             return 0;
     }
 
 }
+
+//Todo lo que se imprima en pantalla principal debe ser llamado a esta funcion para controlar el tamaño del texto con CSS
+function imprimirPantallaPrincipal(texto) {
+
+    if (texto.toString().length >= 1 && texto.toString().length <= 10) {
+        pantalla.classList.remove('tam2_texto_pant');
+        pantalla.classList.remove('tam3_texto_pant');
+        pantalla.classList.add('tam1_texto_pant');
+    } else if (texto.toString().length > 10 && texto.toString().length <= 15) {
+        pantalla.classList.remove('tam1_texto_pant');
+        pantalla.classList.remove('tam3_texto_pant');
+        pantalla.classList.add('tam2_texto_pant');
+    }
+    else if (texto.toString().length > 15) {
+        pantalla.classList.remove('tam1_texto_pant');
+        pantalla.classList.remove('tam2_texto_pant');
+        pantalla.classList.add('tam3_texto_pant');
+    }
+
+    pantalla.innerText = texto;
+
+}
+
+
 
 
 
