@@ -9,12 +9,16 @@ let boton_igual_disponible = false;
 let boton_negativo_disponible = false;
 let boton_porcentaje_disponible = false;
 let boton_borrar_disponible = false;
+let botones_operadores_disponible = true;
 let habilitar_borrar_pantalla_operaciones = false;
 let habilitar_calculo_operadores = false;
 
 let numeroActual = NaN;
 let numeroAnterior = NaN;
 let operadorSeleccionado = '';
+
+//Mensajes error
+let mensajeErrorDivCero = 'No se puede dividir para 0';
 
 //Se agrega el evento click a todo el contenedor de botones y se controla cada caso por boton
 divBotones.addEventListener('click', (event) => {
@@ -24,7 +28,7 @@ divBotones.addEventListener('click', (event) => {
         case elemento_btn.classList.contains('numero'):
             accionNumeros(elemento_btn.innerText);
             break;
-        case elemento_btn.classList.contains('operadores'):
+        case (elemento_btn.classList.contains('operadores') && botones_operadores_disponible):
             accionOperadores(elemento_btn.innerText);
             break;
         case (elemento_btn.innerText === '=' && boton_igual_disponible):
@@ -84,46 +88,59 @@ function accionNumeros(texto) {
 }
 
 function accionOperadores(operador) {
-    //Se realiza la función de calcular usando los botones de operadores
-    if (habilitar_calculo_operadores) {
-        // console.log(`Se habilta calcOpe: ${numeroAnterior}${operadorSeleccionado}${numeroActual}`);
-        let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
-        numeroActual = resultado;
-        numeroAnterior = resultado;
-        console.log(resultado);
-        pantalla_operaciones.innerText = resultado + " " + operador;
-        operadorSeleccionado = operador;
-        imprimirPantallaPrincipal(resultado);
-    } else {
-        operadorSeleccionado = operador;
-        pantalla_operaciones.innerText = pantalla.innerText + " " + operadorSeleccionado;
-        pantalla_operaciones.classList.remove('po_color');
-        numeroAnterior = numeroActual;
+    try {
+        //Se realiza la función de calcular usando los botones de operadores
+        if (habilitar_calculo_operadores) {
+            // console.log(`Se habilta calcOpe: ${numeroAnterior}${operadorSeleccionado}${numeroActual}`);
+            let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
+            numeroActual = resultado;
+            numeroAnterior = resultado;
+            console.log(resultado);
+            pantalla_operaciones.innerText = resultado + " " + operador;
+            operadorSeleccionado = operador;
+            imprimirPantallaPrincipal(resultado);
+        } else {
+            operadorSeleccionado = operador;
+            pantalla_operaciones.innerText = pantalla.innerText + " " + operadorSeleccionado;
+            pantalla_operaciones.classList.remove('po_color');
+            numeroAnterior = numeroActual;
+        }
+
+        resetearValoresPantallaPrincipal();
+        boton_igual_disponible = true;
+        habilitar_borrar_pantalla_operaciones = false;
+
+        habilitar_calculo_operadores = false;
+    } catch (error) {
+        if (error.message.startsWith("DivisionError")) {
+            manejarErrorDivisionCero(mensajeErrorDivCero);
+        }
     }
-
-    resetearValoresPantallaPrincipal();
-    boton_igual_disponible = true;
-    habilitar_borrar_pantalla_operaciones = false;
-
-    habilitar_calculo_operadores = false;
 }
 
 function accionBtnIgual() {
-    if (Number.isNaN(numeroAnterior)){
-        numeroAnterior=0;
-    }
-    console.log('anterior: ' + numeroAnterior);
-    console.log('actual: ' + numeroActual);
-    let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
-    pantalla_operaciones.innerText = pantalla_operaciones.innerText + ' ' + numeroActual + ' =';
-    imprimirPantallaPrincipal(resultado);
-    numeroActual = resultado;
-    habilitar_borrar_pantalla_operaciones = true;
-    boton_igual_disponible = false;
-    boton_porcentaje_disponible=false;
-    habilitar_calculo_operadores = false;
+    try {
+        if (Number.isNaN(numeroAnterior)) {
+            numeroAnterior = 0;
+        }
+        console.log('anterior: ' + numeroAnterior);
+        console.log('actual: ' + numeroActual);
+        pantalla_operaciones.innerText = pantalla_operaciones.innerText + ' ' + numeroActual + ' =';
+        let resultado = realizarOperacion(numeroAnterior, numeroActual, operadorSeleccionado);
+        imprimirPantallaPrincipal(resultado);
+        numeroActual = resultado;
+        habilitar_borrar_pantalla_operaciones = true;
+        boton_igual_disponible = false;
+        boton_porcentaje_disponible = false;
+        habilitar_calculo_operadores = false;
 
-    resetearValoresPantallaPrincipal();
+        resetearValoresPantallaPrincipal();
+    } catch (error) {
+        if (error.message.startsWith("DivisionError")) {
+            manejarErrorDivisionCero(mensajeErrorDivCero);
+        }
+    }
+
 }
 
 function accionBtnNegativo() {
@@ -137,37 +154,47 @@ function accionBtnNegativo() {
 }
 
 function accionBtnPorcentaje() {
-    if (pantalla_operaciones.innerText === "#") {
-        reseteoTotal();
-    } else {
-        let numero_pantalla = pantalla.innerText;
-        let numero_para_porcentaje = numero_pantalla / 100;
-        pantalla_operaciones.innerText = pantalla_operaciones.innerText + " " + numero_pantalla + "%=";
-        let resultado = 0;
-        switch (operadorSeleccionado) {
-            case 'x':
-            case '÷':
-                resultado = realizarOperacion(numeroAnterior, numero_para_porcentaje, operadorSeleccionado);
-                break;
-            case '+': 
-            case '-':
-                resultado = realizarOperacion(numeroAnterior, numeroAnterior*numero_para_porcentaje, operadorSeleccionado);
-                break;
-            default:
-                console.log('No ha seleccionado un operador para el calculo del %')
-                break;
+    try {
+
+        if (pantalla_operaciones.innerText === "#") {
+            reseteoTotal();
+        } else {
+            let numero_pantalla = pantalla.innerText;
+            let numero_para_porcentaje = numero_pantalla / 100;
+            pantalla_operaciones.innerText = pantalla_operaciones.innerText + " " + numero_pantalla + "%=";
+            let resultado = 0;
+            switch (operadorSeleccionado) {
+                case 'x':
+                case '÷':
+                    resultado = realizarOperacion(numeroAnterior, numero_para_porcentaje, operadorSeleccionado);
+                    break;
+                case '+':
+                case '-':
+                    resultado = realizarOperacion(numeroAnterior, numeroAnterior * numero_para_porcentaje, operadorSeleccionado);
+                    break;
+                default:
+                    console.log('No ha seleccionado un operador para el calculo del %')
+                    break;
+            }
+
+            imprimirPantallaPrincipal(resultado);
+            numeroActual = resultado;
+            habilitar_borrar_pantalla_operaciones = true;
+            boton_igual_disponible = false;
+            boton_porcentaje_disponible = false;
+            habilitar_calculo_operadores = false;
+
+            resetearValoresPantallaPrincipal();
+
         }
 
-        imprimirPantallaPrincipal(resultado);
-        numeroActual = resultado;
-        habilitar_borrar_pantalla_operaciones = true;
-        boton_igual_disponible = false;
-        boton_porcentaje_disponible = false;
-        habilitar_calculo_operadores = false;
-
-        resetearValoresPantallaPrincipal();
-
+    } catch (error) {
+        if (error.message.startsWith("DivisionError")) {
+            manejarErrorDivisionCero(mensajeErrorDivCero);
+        }
     }
+
+
 }
 
 function accionBtnPunto() {
@@ -229,6 +256,13 @@ function resetearValoresIniciales() {
     operadorSeleccionado = '';
     boton_negativo_disponible = false;
     habilitar_calculo_operadores = false;
+
+    boton_igual_disponible = false;
+    boton_porcentaje_disponible = false;
+    boton_borrar_disponible = false;
+
+    botones_operadores_disponible = true;
+
 }
 
 function realizarOperacion(numero1, numero2, operador) {
@@ -237,11 +271,16 @@ function realizarOperacion(numero1, numero2, operador) {
         case "+":
             return Number(numero1) + Number(numero2);
         case "-":
-            return resultado = Number(numero1) - Number(numero2);
+            return Number(numero1) - Number(numero2);
         case "x":
-            return resultado = Number(numero1) * Number(numero2);
+            return Number(numero1) * Number(numero2);
         case "÷":
-            return resultado = Number(numero1) / Number(numero2);
+            if (Number(numero2) === 0) {
+                throw new Error("DivisionError: No se puede dividir para 0");
+            } else {
+                return Number(numero1) / Number(numero2);
+            }
+
         default:
             console.log('Hubo algún error al realizar la operación');
             return 0;
@@ -269,6 +308,13 @@ function imprimirPantallaPrincipal(texto) {
 
     pantalla.innerText = texto;
 
+}
+
+function manejarErrorDivisionCero(mensajeError) {
+    // console.error("Error de división:", error.message); // Manejo específico para DivisionError
+    imprimirPantallaPrincipal(mensajeError);
+    resetearValoresIniciales();
+    botones_operadores_disponible = false;
 }
 
 
