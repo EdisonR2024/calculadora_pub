@@ -4,7 +4,7 @@ let pantalla_operaciones = document.querySelector("#pantalla_operaciones");
 
 let primerNumero = true;
 let punto_activado = false;
-let limite_caracteres_pantalla = 20;
+let limite_caracteres_pantalla = 27;
 let boton_igual_disponible = false;
 let boton_negativo_disponible = false;
 let boton_porcentaje_disponible = false;
@@ -19,6 +19,7 @@ let operadorSeleccionado = '';
 
 //Mensajes error
 let mensajeErrorDivCero = 'No se puede dividir para 0';
+let mensajeErrorInfinito = 'Infinito';
 
 //Se agrega el evento click a todo el contenedor de botones y se controla cada caso por boton
 divBotones.addEventListener('click', (event) => {
@@ -79,6 +80,8 @@ function accionNumeros(texto) {
             // console.log('actual: ' + numeroActual);
         }
 
+        botones_operadores_disponible = true;
+
         //Para activar la función de calcular con los btn de operadores
         if (!Number.isNaN(numeroAnterior)) {
             habilitar_calculo_operadores = true;
@@ -113,7 +116,9 @@ function accionOperadores(operador) {
         habilitar_calculo_operadores = false;
     } catch (error) {
         if (error.message.startsWith("DivisionError")) {
-            manejarErrorDivisionCero(mensajeErrorDivCero);
+            manejarErrorPantallaPrincipal(mensajeErrorDivCero);
+        }else if (error.message.startsWith("InfinitoError")) {
+            manejarErrorPantallaPrincipal(mensajeErrorInfinito);
         }
     }
 }
@@ -123,6 +128,11 @@ function accionBtnIgual() {
         if (Number.isNaN(numeroAnterior)) {
             numeroAnterior = 0;
         }
+
+        if (Number.isNaN(numeroActual)) {
+            numeroActual = 0;
+        }
+
         console.log('anterior: ' + numeroAnterior);
         console.log('actual: ' + numeroActual);
         pantalla_operaciones.innerText = pantalla_operaciones.innerText + ' ' + numeroActual + ' =';
@@ -135,9 +145,13 @@ function accionBtnIgual() {
         habilitar_calculo_operadores = false;
 
         resetearValoresPantallaPrincipal();
+        numeroAnterior = NaN;
+
     } catch (error) {
         if (error.message.startsWith("DivisionError")) {
-            manejarErrorDivisionCero(mensajeErrorDivCero);
+            manejarErrorPantallaPrincipal(mensajeErrorDivCero);
+        } else if (error.message.startsWith("InfinitoError")) {
+            manejarErrorPantallaPrincipal(mensajeErrorInfinito);
         }
     }
 
@@ -185,12 +199,15 @@ function accionBtnPorcentaje() {
             habilitar_calculo_operadores = false;
 
             resetearValoresPantallaPrincipal();
+            numeroAnterior = NaN;
 
         }
 
     } catch (error) {
         if (error.message.startsWith("DivisionError")) {
-            manejarErrorDivisionCero(mensajeErrorDivCero);
+            manejarErrorPantallaPrincipal(mensajeErrorDivCero);
+        }else if (error.message.startsWith("InfinitoError")) {
+            manejarErrorPantallaPrincipal(mensajeErrorInfinito);
         }
     }
 
@@ -267,23 +284,34 @@ function resetearValoresIniciales() {
 
 function realizarOperacion(numero1, numero2, operador) {
 
+    let resultado_operacion = 0;
+
     switch (operador) {
         case "+":
-            return Number(numero1) + Number(numero2);
+            resultado_operacion = Number(numero1) + Number(numero2);
+            break;
         case "-":
-            return Number(numero1) - Number(numero2);
+            resultado_operacion = Number(numero1) - Number(numero2);
+            break;
         case "x":
-            return Number(numero1) * Number(numero2);
+            resultado_operacion = Number(numero1) * Number(numero2);
+            break;
         case "÷":
             if (Number(numero2) === 0) {
                 throw new Error("DivisionError: No se puede dividir para 0");
             } else {
-                return Number(numero1) / Number(numero2);
+                resultado_operacion = Number(numero1) / Number(numero2);
             }
-
+            break;
         default:
             console.log('Hubo algún error al realizar la operación');
             return 0;
+    }
+
+    if (!Number.isFinite(resultado_operacion)) {
+        throw new Error("InfinitoError: Infinito");
+    } else {
+        return resultado_operacion;
     }
 
 }
@@ -291,27 +319,27 @@ function realizarOperacion(numero1, numero2, operador) {
 //Todo lo que se imprima en pantalla principal debe ser llamado a esta funcion para controlar el tamaño del texto con CSS
 function imprimirPantallaPrincipal(texto) {
 
+    pantalla.classList.remove('tam1_texto_pant');
+    pantalla.classList.remove('tam2_texto_pant');
+    pantalla.classList.remove('tam3_texto_pant');
+    pantalla.classList.remove('tam4_texto_pant');
+
     if (texto.toString().length >= 1 && texto.toString().length <= 10) {
-        pantalla.classList.remove('tam2_texto_pant');
-        pantalla.classList.remove('tam3_texto_pant');
         pantalla.classList.add('tam1_texto_pant');
     } else if (texto.toString().length > 10 && texto.toString().length <= 15) {
-        pantalla.classList.remove('tam1_texto_pant');
-        pantalla.classList.remove('tam3_texto_pant');
         pantalla.classList.add('tam2_texto_pant');
     }
-    else if (texto.toString().length > 15) {
-        pantalla.classList.remove('tam1_texto_pant');
-        pantalla.classList.remove('tam2_texto_pant');
+    else if (texto.toString().length > 15 && texto.toString().length <= 20) {
         pantalla.classList.add('tam3_texto_pant');
+    } else if (texto.toString().length > 20) {
+        pantalla.classList.add('tam4_texto_pant');
     }
 
     pantalla.innerText = texto;
 
 }
 
-function manejarErrorDivisionCero(mensajeError) {
-    // console.error("Error de división:", error.message); // Manejo específico para DivisionError
+function manejarErrorPantallaPrincipal(mensajeError) {
     imprimirPantallaPrincipal(mensajeError);
     resetearValoresIniciales();
     botones_operadores_disponible = false;

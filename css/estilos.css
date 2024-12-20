@@ -114,6 +114,11 @@ body::after {
             /* color: yellow; */
         }
 
+        .tam4_texto_pant{
+            font-size: 2rem;
+            /* color: yellow; */
+        }
+
         .po_color{
             color: var(--fondo-principal);
         }
