@@ -1,19 +1,31 @@
 {
-  "name": "calculadora_final",
+  "name": "calculadora_er",
   "version": "1.0.0",
-  "description": "Mi Calculadora",
-  "main": "index.html",
+  "description": "Mi Calculadora Basica",
+  "main": "index.js",
   "scripts": {
+    "build": "webpack --mode production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EdisonR2024/calculadora_final.git"
+    "url": "git+https://github.com/EdisonR2024/calculadora_pub.git"
   },
-  "author": "Edison",
+  "author": "Edison Rivadeneira",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/EdisonR2024/calculadora_final/issues"
+    "url": "https://github.com/EdisonR2024/calculadora_pub/issues"
   },
-  "homepage": "https://github.com/EdisonR2024/calculadora_final#readme"
+  "homepage": "https://github.com/EdisonR2024/calculadora_pub#readme",
+  "devDependencies": {
+    "clean-webpack-plugin": "^4.0.0",
+    "css-loader": "^7.1.2",
+    "css-minimizer-webpack-plugin": "^7.0.0",
+    "html-loader": "^5.1.0",
+    "html-webpack-plugin": "^5.6.3",
+    "mini-css-extract-plugin": "^2.9.2",
+    "terser-webpack-plugin": "^5.3.11",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
+  }
 }
